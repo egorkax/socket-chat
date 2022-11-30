@@ -1,26 +1,57 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect, useState} from 'react';
 import './App.css';
+import io from "socket.io-client";
+
+
+const portD = 'https://samurai-chat-back.herokuapp.com'
+const port = 'http://localhost:3007'
+let socket = io(port)
+console.log(socket)
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    const [messages, setMessages] = useState<Array<any>>([{message: 'Hello new', id: '2342352fs', user: {id: 'sdff243', name: 'new'}}])
+    const [message, setMessage] = useState('')
+
+    useEffect(() => {
+        debugger
+
+        socket.on('init-messages-published', (messages: any) => {
+            debugger
+            setMessages(messages)
+        })
+        socket.on("new-message-sent", (message: any) => {
+            setMessages((prevState)=>[...prevState, message])
+        })
+        return ()=>{
+            socket.off('init-messages-published')
+            console.log('unmount')
+        }
+    }, [])
+const onClickHandler=()=>{
+    socket.emit('client-message-sent', message)
+    setMessage('')
+}
+
+    return (
+        <div className="App">
+            <div className={'blockMess'} style={{overflowY: 'auto'}}>
+                <div>
+                    {messages.map((e, index) => {
+                        return <div key={index}>
+                            <b>{e.user.name}:</b>{e.message}
+                            <hr/>
+                        </div>
+                    })}
+                </div>
+                <div className={'blockSend'}>
+                    <textarea value={message} onChange={(e) => setMessage(e.currentTarget.value)}/>
+                    <button onClick={onClickHandler}>send
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    );
 }
 
 export default App;
