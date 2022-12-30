@@ -5,11 +5,11 @@ import io from "socket.io-client";
 
 const portD = 'https://samurai-chat-back.herokuapp.com'
 const port = 'http://localhost:3007'
-let socket = io(port)
+let socket = io(portD)
 console.log(socket)
 
 function App() {
-    const [messages, setMessages] = useState<Array<any>>([{message: 'Hello new', id: '2342352fs', user: {id: 'sdff243', name: 'new'}}])
+    const [messages, setMessages] = useState<Array<any>>([])
     const [message, setMessage] = useState('')
 
     useEffect(() => {
@@ -20,17 +20,14 @@ function App() {
             setMessages(messages)
         })
         socket.on("new-message-sent", (message: any) => {
-            setMessages((prevState)=>[...prevState, message])
+            setMessages((prevState) => [...prevState, message])
         })
-        return ()=>{
-            socket.off('init-messages-published')
-            console.log('unmount')
-        }
+
     }, [])
-const onClickHandler=()=>{
-    socket.emit('client-message-sent', message)
-    setMessage('')
-}
+    const onClickHandler = () => {
+        socket.emit('client-message-sent', message)
+        setMessage('')
+    }
 
     return (
         <div className="App">
